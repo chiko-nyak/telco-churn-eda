@@ -1,0 +1,149 @@
+---
+title: "Telco Customer Churn: What Predicts Churn?"
+author: "Chiko Nyakurerwa"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(readr)
+```
+
+## Business Question
+
+**Do month-to-month contracts and lack of tech support predict churn more than monthly charges do?**
+
+Understanding which customer attributes drive churn lets a business target retention
+offers where they'll actually move the needle, instead of discounting broadly.
+
+---
+
+## 1. Load the data
+
+```{r load-data}
+df <- read_csv("WA_Fn-UseC_-Telco-Customer-Churn.csv")
+
+glimpse(df)
+summary(df)
+```
+
+## 2. Clean the data
+
+```{r clean-data}
+df <- df %>%
+  mutate(
+    TotalCharges = as.numeric(TotalCharges),
+    SeniorCitizen = factor(SeniorCitizen, levels = c(0, 1), labels = c("No", "Yes")),
+    Churn = factor(Churn, levels = c("No", "Yes"))
+  ) %>%
+  select(-customerID) %>%
+  drop_na(TotalCharges)
+
+# sanity check: no missing values left
+colSums(is.na(df))
+```
+
+## 3. Cross-tabulate churn against key variables
+
+```{r cross-tabs}
+# Churn rate by contract type
+df %>%
+  group_by(Contract) %>%
+  summarise(
+    n = n(),
+    churn_rate = mean(Churn == "Yes")
+  ) %>%
+  arrange(desc(churn_rate))
+
+# Churn rate by tech support
+df %>%
+  group_by(TechSupport) %>%
+  summarise(
+    n = n(),
+    churn_rate = mean(Churn == "Yes")
+  ) %>%
+  arrange(desc(churn_rate))
+
+# Churn rate by payment method
+df %>%
+  group_by(PaymentMethod) %>%
+  summarise(
+    n = n(),
+    churn_rate = mean(Churn == "Yes")
+  ) %>%
+  arrange(desc(churn_rate))
+
+# Churn rate by internet service
+df %>%
+  group_by(InternetService) %>%
+  summarise(
+    n = n(),
+    churn_rate = mean(Churn == "Yes")
+  ) %>%
+  arrange(desc(churn_rate))
+```
+
+## 4. Visualizations
+
+```{r viz-contract}
+df %>%
+  group_by(Contract) %>%
+  summarise(churn_rate = mean(Churn == "Yes")) %>%
+  ggplot(aes(x = reorder(Contract, -churn_rate), y = churn_rate)) +
+  geom_col(fill = "#2C7FB8") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "Churn Rate by Contract Type",
+    x = "Contract Type",
+    y = "Churn Rate"
+  ) +
+  theme_minimal()
+```
+
+```{r viz-tenure}
+ggplot(df, aes(x = Churn, y = tenure, fill = Churn)) +
+  geom_boxplot() +
+  labs(
+    title = "Tenure Distribution by Churn Status",
+    x = "Churned?",
+    y = "Tenure (months)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r viz-techsupport}
+df %>%
+  group_by(TechSupport) %>%
+  summarise(churn_rate = mean(Churn == "Yes")) %>%
+  ggplot(aes(x = reorder(TechSupport, -churn_rate), y = churn_rate)) +
+  geom_col(fill = "#D95F02") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "Churn Rate by Tech Support Subscription",
+    x = "Has Tech Support?",
+    y = "Churn Rate"
+  ) +
+  theme_minimal()
+```
+
+## 5. Findings
+
+*(Fill these in once you've run the code above and looked at your actual numbers —
+the structure below is a guide, not the final numbers.)*
+
+1. **Finding 1 (contract type):** Month-to-month customers churn at roughly ___x
+   the rate of two-year contract customers.
+2. **Finding 2 (tenure):** Churned customers have a median tenure of ___ months vs.
+   ___ months for retained customers — churn risk is highest early in the relationship.
+3. **Finding 3 (tech support):** Customers without tech support churn at ___% vs.
+   ___% for those with it.
+
+### So what?
+
+*(One or two sentences: what should the business actually do with this? e.g. "Retention
+offers should prioritize month-to-month customers in their first 6 months, and bundling
+free tech support in that window may reduce churn more than a price discount would.")*

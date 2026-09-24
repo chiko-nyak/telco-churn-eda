@@ -1,0 +1,76 @@
+---
+title: "Big Tech Stock Price Analysis"
+author: "Chiko Nyakurerwa"
+date: "2026"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(quantmod)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Introduction
+In this analysis I compare the stock performance of four major tech companies 
+(Apple, Microsoft, Google, Amazon) from January 2024 to present.
+
+```{r get-data}
+tickers <- c("AAPL", "MSFT", "GOOGL", "AMZN")
+getSymbols(tickers, from = "2024-01-01")
+```
+## Data Preparation
+
+```{r prices}
+prices <- data.frame(
+  date = index(AAPL),
+  AAPL = as.numeric(Cl(AAPL)),
+  MSFT = as.numeric(Cl(MSFT)),
+  GOOGL = as.numeric(Cl(GOOGL)),
+  AMZN = as.numeric(Cl(AMZN))
+)
+
+prices_long <- tidyr::pivot_longer(prices, -date, 
+                                    names_to = "stock", 
+                                    values_to = "price")
+prices
+prices_long
+```
+
+## Stock Price Trends
+
+How have these four stocks moved since January 2024?
+
+```{r plot-prices}
+ggplot(prices_long, aes(x = date, y = price, color = stock)) +
+  geom_line() +
+  labs(title = "Big Tech Stock Prices (2024–2026)",
+       x = "Date", y = "Closing Price (USD)") +
+  theme_minimal()
+```
+
+## Returns: Which Stock Grew the Most?
+
+Rather than raw price, we calculate percentage return from the start date so we can fairly compare stocks at different price levels.
+
+```{r returns}
+returns <- prices %>%
+  mutate(across(-date, ~ (. / first(.) - 1) * 100))
+
+returns_long <- tidyr::pivot_longer(returns, -date,
+                                     names_to = "stock",
+                                     values_to = "return_pct")
+
+ggplot(returns_long, aes(x = date, y = return_pct, color = stock)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  labs(title = "Cumulative % Return Since Jan 2024",
+       x = "Date", y = "Return (%)") +
+  theme_minimal()
+```
+
+## Conclusion
+
+Over the observed period from January 2024 to present, all four major tech stocks experienced overall positive momentum driven by strong growth in cloud infrastructure and AI integration. Alphabet (GOOGL) and Apple (AAPL) emerged as top performers in overall cumulative returns, showing significant growth through late 2025 and into 2026. Mid-period drawdowns occurred across the board in mid-2024 and early 2025, largely driven by broader macroeconomic conditions, interest rate adjustments, and periodic market pullbacks in megacap tech valuations. Overall, companies leading in monetized AI solutions and steady earnings expansions demonstrated the strongest resilience and multi-year trajectory.

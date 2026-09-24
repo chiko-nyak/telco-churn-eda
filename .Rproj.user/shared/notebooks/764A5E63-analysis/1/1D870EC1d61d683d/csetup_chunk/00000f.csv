@@ -1,0 +1,9 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0","library(quantmod)"
+"0","library(ggplot2)"
+"0","library(dplyr)"
+"0","library(readr)"
+"0","library(tidyr)"
+"0","data/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+"2","Error: object 'WA_Fn' not found
+"

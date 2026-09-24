@@ -1,0 +1,8 @@
+"0","# Churn rate by contract type"
+"0","df %>%"
+"0","  group_by(Contract) %>%"
+"0","  summarise("
+"0","    n = n(),"
+"0","    churn_rate = mean(Churn == ""Yes"")"
+"0","  ) %>%"
+"0","  arrange(desc(churn_rate))"
