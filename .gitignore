@@ -1,0 +1,10 @@
+# RStudio temporary session and user files
+.Rproj.user/
+
+# R history and workspace state
+.Rhistory
+.RData
+.Ruserdata
+
+# HTML output (optional - add if you don't want to track rendered report builds)
+*.html
